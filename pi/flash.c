@@ -505,13 +505,26 @@ int flash_program_byte(int iic, uint16_t addr, uint8_t data)
 *	to the original data, and print a success/fail message.
 * Release the Z80 bus.
 *****************************************************************************/
-int main()
+int main(int argc, char *argv[])
 {
     int     iic;
 	char	buf[65536];
 
-    iic = openIIC(I2C_DEV);
+	iic = openIIC(I2C_DEV);
 	mcp23017_init(iic);
+
+	if (argc > 1)
+	{
+		if ((argc > 2) || (strcmp(argv[1], "r") != 0))
+		{
+			fprintf(stderr, "\r\nInvalid arguments.\r\n\r\nUsage: 'flash' with no arguments to flash, 'flash r' to force a reset.\r\n");
+			exit(1);
+		}
+		printf("\r\nRebooting board.\r\n");
+		bus_release(iic);
+		exit(0);
+	}
+
 
 	uint16_t d = flash_read_product_id(iic);
 #ifdef AM29F040B
